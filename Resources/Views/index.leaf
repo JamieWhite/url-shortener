@@ -2,11 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-
-  <title>#(title)</title>
+  <title>URL's</title>
+  <link rel="stylesheet" href="css/style.css?v=1.8.2" type="text/css" media="screen"/>
 </head>
 
-<body>
-  <h1>#(title)</h1>
+<body class="linkslist desktop">
+  <div id="wrap">
+  <h2></h1>
+  
+#if(count(shortlinks) == 0):
+    No results!
+#else:
+
+<table>
+  <thead>
+    <tr>
+      <th>Short Link</th>
+      <th>URL</th>
+      <th>Added by</th>
+      <!-- <th>Created at</th> -->
+    </tr>
+  </thead>
+#for(shortlink in shortlinks):
+  <tr>
+    <td>#(shortlink.shortName)</td>
+    <td><a href="#(shortlink.url)">#(shortlink.url)</a></td>
+    <td>#(shortlink.author)</td>
+    <!-- <td>#(shortlink.createdAt)</td> -->
+  </tr>
+#endfor
+</table>
+
+#endif
+
+</div>
+
+  
 </body>
 </html>
