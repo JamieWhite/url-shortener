@@ -26,21 +26,47 @@ func routes(_ app: Application) throws {
     
     // MARK: Protected
     
-    let protected = app.grouped(UserAuthenticator())
+    let protected = app.grouped(UserAuthenticator(), SlackAuthenticator())
     
     // Create a new URL if it doesn't exist already
-    protected.post() { req -> ShortLink in
-        try req.auth.require(Admin.self)
+    protected.post() { req -> String in
+        guard req.auth.has(Admin.self) || req.auth.has(Slack.self) else {
+            throw Abort(.unauthorized)
+        }
         
-        let shortLink = try req.content.decode(ShortLink.self)
+        let shortLink: ShortLink
+        if req.auth.has(Slack.self) {
+            let slackRequest = try req.content.decode(SlackRequestBody.self)
+            let splitText = slackRequest.text.split(separator: " ")
+            
+            guard splitText.count == 2 else {
+                throw Abort(.badRequest)
+            }
+            
+            shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.user_name)
+        } else {
+            shortLink = try req.content.decode(ShortLink.self)
+        }
         
         guard try await ShortLink.query(on: req.db).filter(\.$shortName == shortLink.shortName)
             .first() == nil else {
-            throw Abort(.alreadyReported)
+//            throw Abort(.alreadyReported)
+            return "Short name already exists"
+        }
+        
+        guard !shortLink.shortName.isEmpty else {
+//            throw Abort(.badRequest)
+            return "Invalid short name"
+        }
+        
+        guard !shortLink.url.isEmpty, shortLink.url.isValidURL else {
+//            throw Abort(.badRequest)
+            return "Invalid URL"
         }
         
         try await shortLink.save(on: req.db)
-        return shortLink
+        
+        return "\(shortLink.shortName) successfully created"
     }
     
     protected.delete(":name") { req -> HTTPStatus in
