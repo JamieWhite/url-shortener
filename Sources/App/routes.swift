@@ -17,7 +17,7 @@ func routes(_ app: Application) throws {
             query = query.filter(\.$shortName ~~ q)
         }
         
-        let shortLinks = try await query.all()
+        let shortLinks = try await query.sort(\.$shortName).all()
 
         return try await req.view.render("index", ["shortlinks": shortLinks])
     }
