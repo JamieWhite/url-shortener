@@ -27,3 +27,10 @@ final class ShortLink: Model, Content {
         self.author = author
     }
 }
+
+extension ShortLink: Validatable {
+    static func validations(_ validations: inout Validations) {
+        validations.add("url", as: String.self, is: .url)
+        validations.add("shortName", as: String.self, is: !.empty)
+    }
+}

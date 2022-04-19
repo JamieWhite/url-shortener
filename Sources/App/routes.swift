@@ -1,11 +1,8 @@
 import Fluent
 import Vapor
 
-struct SearchTerm: Content {
-    var q: String?
-}
-
 func routes(_ app: Application) throws {
+    
     app.get(":name") { req -> Response in
         let name = req.parameters.get("name")!
         let shortLink = try await ShortLink.query(on: req.db).filter(\.$shortName == name)
@@ -14,70 +11,80 @@ func routes(_ app: Application) throws {
     }
 
     app.get() { req async throws -> View in
-        let shortLinks: [ShortLink]
-        if let searchTerm = try? req.query.decode(SearchTerm.self), let q = searchTerm.q {
-            shortLinks = try await ShortLink.query(on: req.db).filter(\.$shortName ~~ q).all()
-        } else {
-            shortLinks = try await ShortLink.query(on: req.db).all()
+        var query = ShortLink.query(on: req.db)
+        
+        if let q: String = req.query["q"] {
+            query = query.filter(\.$shortName ~~ q)
         }
+        
+        let shortLinks = try await query.all()
 
         return try await req.view.render("index", ["shortlinks": shortLinks])
     }
     
     // MARK: Protected
     
-    let protected = app.grouped(UserAuthenticator(), SlackAuthenticator())
+    let adminProtected = app.grouped(AdminAuthenticator())
     
-    // Create a new URL if it doesn't exist already
-    protected.post() { req -> String in
-        guard req.auth.has(Admin.self) || req.auth.has(Slack.self) else {
+    // Create short link
+    adminProtected.post() { req -> ShortLink in
+        guard req.auth.has(Admin.self) else {
             throw Abort(.unauthorized)
         }
         
-        let shortLink: ShortLink
-        if req.auth.has(Slack.self) {
-            let slackRequest = try req.content.decode(SlackRequestBody.self)
-            let splitText = slackRequest.text.split(separator: " ")
-            
-            guard splitText.count == 2 else {
-                throw Abort(.badRequest)
-            }
-            
-            shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.user_name)
-        } else {
-            shortLink = try req.content.decode(ShortLink.self)
-        }
+        try ShortLink.validate(content: req)
+        let shortLink = try req.content.decode(ShortLink.self)
         
         guard try await ShortLink.query(on: req.db).filter(\.$shortName == shortLink.shortName)
             .first() == nil else {
-//            throw Abort(.alreadyReported)
-            return "Short name already exists"
-        }
-        
-        guard !shortLink.shortName.isEmpty else {
-//            throw Abort(.badRequest)
-            return "Invalid short name"
-        }
-        
-        guard !shortLink.url.isEmpty, shortLink.url.isValidURL else {
-//            throw Abort(.badRequest)
-            return "Invalid URL"
+            throw Abort(.alreadyReported)
         }
         
         try await shortLink.save(on: req.db)
         
-        return "\(shortLink.shortName) successfully created"
+        return shortLink
     }
     
-    protected.delete(":name") { req -> HTTPStatus in
+    // Delete short link
+    adminProtected.delete(":name") { req -> HTTPStatus in
         try req.auth.require(Admin.self)
         
-        let name = req.parameters.get("name")!
+        guard let name = req.parameters.get("name") else {
+            throw Abort(.badRequest)
+        }
+        
         guard let shortLink = try await ShortLink.query(on: req.db).filter(\.$shortName == name)
             .first() else {
             throw Abort(.notFound)
         }
         try await shortLink.delete(on: req.db)
         return .ok
+    }
+    
+    let slackProtected = app.grouped(SlackAuthenticator())
+    
+    // Create short link (Slack)
+    slackProtected.post("slack") { req -> String in
+        guard req.auth.has(Slack.self) else {
+            throw Abort(.unauthorized)
+        }
+        
+        let slackRequest = try req.content.decode(SlackRequestBody.self)
+        let splitText = slackRequest.text.split(separator: " ")
+        
+        guard splitText.count == 2 else {
+            throw Abort(.badRequest)
+        }
+        
+        let shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.user_name)
+        
+        guard try await ShortLink.query(on: req.db).filter(\.$shortName == shortLink.shortName)
+            .first() == nil else {
+            return "Short name already exists"
+        }
+        
+        try await shortLink.save(on: req.db)
+        
+        return "\(shortLink.shortName) successfully created"
     }
 }
