@@ -17,6 +17,7 @@ public func configure(_ app: Application) throws {
     ), as: .psql)
 
     app.migrations.add(CreateShortLink())
+    try app.autoMigrate().wait()
 
     app.views.use(.leaf)
 
