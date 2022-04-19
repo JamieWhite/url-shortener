@@ -3,7 +3,7 @@ import Foundation
 
 struct CreateShortLink: AsyncMigration {
     func prepare(on database: Database) async throws {
-        try await database.schema("shortlinks")
+        try await database.schema(ShortLink.schema)
             .id()
             .field("url", .string, .required)
             .field("short_name", .string, .required)
