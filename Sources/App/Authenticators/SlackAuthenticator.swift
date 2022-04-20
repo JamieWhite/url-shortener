@@ -1,5 +1,5 @@
 import Vapor
-import CommonCrypto
+import NIOSSL
 
 struct Slack: Authenticatable {}
 
