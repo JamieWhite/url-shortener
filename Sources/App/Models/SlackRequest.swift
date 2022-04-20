@@ -1,10 +1,15 @@
 import Vapor
 
 struct SlackRequestBody: Content {
-    let token: String
     let text: String
-    let response_url: URL
-    let user_name: String
+    let responseURL: URL
+    let userName: String
+    
+    enum CodingKeys: String, CodingKey {
+        case text
+        case responseURL = "response_url"
+        case userName = "user_name"
+    }
 }
 
 struct SlackResponse: Content {

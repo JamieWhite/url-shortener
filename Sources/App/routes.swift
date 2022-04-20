@@ -76,7 +76,7 @@ func routes(_ app: Application) throws {
             throw Abort(.badRequest)
         }
         
-        let shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.user_name)
+        let shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.userName)
         
         guard try await ShortLink.query(on: req.db).filter(\.$shortName == shortLink.shortName)
             .first() == nil else {
