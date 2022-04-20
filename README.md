@@ -1,5 +1,23 @@
 # URL Shortener
 
+This is a basic URL shortener where you can create short URL's.
+
+Also supports Slack where you can type slash commands:
+
+##### Add URLS (Slack)
+This adds a short URL.
+
+* /addcommand shortURL URL
+
+this calls `/slack/new`
+
+#### List URLS (Slack)
+The main index is protected by a token so that it's not public. To get the token:
+
+* /listcommand
+
+this calls `/slack/list`
+
 ## Runing via xcode
 
 Needs a `.env` file with the following:
