@@ -9,6 +9,11 @@ func routes(_ app: Application) throws {
             .first()
         return req.redirect(to: shortLink?.url ?? "/", type: .permanent)
     }
+    
+    struct IndexContext: Encodable {
+        let shortLinks: [ShortLink]
+        let slackId: String
+    }
 
     app.get() { req async throws -> View in
         var query = ShortLink.query(on: req.db)
@@ -17,9 +22,13 @@ func routes(_ app: Application) throws {
             query = query.filter(\.$shortName ~~ q)
         }
         
+        guard let token: String = req.query["token"], token == Environment.get("INDEX_TOKEN") else {
+            return try await req.view.render("denied", ["command": Environment.get("COMMAND")])
+        }
+        
         let shortLinks = try await query.sort(\.$shortName).all()
 
-        return try await req.view.render("index", ["shortlinks": shortLinks])
+        return try await req.view.render("index", IndexContext(shortLinks: shortLinks, slackId: Environment.get("SLACK_CLIENT_ID") ?? ""))
     }
     
     // MARK: Protected
@@ -61,30 +70,5 @@ func routes(_ app: Application) throws {
         return .ok
     }
     
-    let slackProtected = app.grouped(SlackAuthenticator())
-    
-    // Create short link (Slack)
-    slackProtected.post("slack") { req -> String in
-        guard req.auth.has(Slack.self) else {
-            throw Abort(.unauthorized)
-        }
-        
-        let slackRequest = try req.content.decode(SlackRequestBody.self)
-        let splitText = slackRequest.text.split(separator: " ")
-        
-        guard splitText.count == 2 else {
-            throw Abort(.badRequest)
-        }
-        
-        let shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.userName)
-        
-        guard try await ShortLink.query(on: req.db).filter(\.$shortName == shortLink.shortName)
-            .first() == nil else {
-            return "Short name already exists"
-        }
-        
-        try await shortLink.save(on: req.db)
-        
-        return "\(shortLink.shortName) successfully created"
-    }
+    try app.register(collection: SlackController())
 }

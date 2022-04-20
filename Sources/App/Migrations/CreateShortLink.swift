@@ -9,6 +9,7 @@ struct CreateShortLink: AsyncMigration {
             .field("short_name", .string, .required)
             .field("author", .string, .required)
             .field("created_at", .date, .required)
+            .field("slack_user_id", .string)
             .create()
     }
 

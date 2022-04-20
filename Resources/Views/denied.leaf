@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>URL's</title>
+  <link rel="stylesheet" href="css/style.css?v=1.8.2" type="text/css" media="screen"/>
+</head>
+
+<body class="linkslist desktop">
+  <div id="wrap">
+  
+    No token. To get the token/URL type /#(command)list on Slack
+
+  </div>
+
+</body>
+</html>

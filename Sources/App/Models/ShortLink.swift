@@ -16,15 +16,19 @@ final class ShortLink: Model, Content {
     @Field(key: "author")
     var author: String
     
+    @Field(key: "slack_user_id")
+    var slackUserId: String?
+    
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
     init() { }
 
-    init(url: String, shortName: String, author: String) {
+    init(url: String, shortName: String, author: String, slackUserId: String?) {
         self.url = url
         self.shortName = shortName
         self.author = author
+        self.slackUserId = slackUserId
     }
 }
 

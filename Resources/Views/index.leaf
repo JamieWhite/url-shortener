@@ -10,7 +10,7 @@
   <div id="wrap">
   <h2></h1>
   
-#if(count(shortlinks) == 0):
+#if(count(shortLinks) == 0):
     No results!
 #else:
 
@@ -23,11 +23,11 @@
       <!-- <th>Created at</th> -->
     </tr>
   </thead>
-#for(shortlink in shortlinks):
+#for(shortLink in shortLinks):
   <tr>
-    <td>#(shortlink.shortName)</td>
-    <td><a href="#(shortlink.url)">#(shortlink.url)</a></td>
-    <td>#(shortlink.author)</td>
+    <td>#(shortLink.shortName)</td>
+    <td><a href="#(shortLink.url)">#(shortLink.url)</a></td>
+    <td><a href="https://app.slack.com/client/#(slackId)/user_profile/#(shortLink.slackUserId)">#(shortLink.author)</a></td>
     <!-- <td>#(shortlink.createdAt)</td> -->
   </tr>
 #endfor
