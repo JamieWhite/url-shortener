@@ -10,6 +10,13 @@ extension HTTPHeaders.Name {
 
 struct SlackAuthenticator: AsyncRequestAuthenticator {
     func authenticate(request: Request) async throws {
+        
+        let slackRequest = try request.content.decode(SlackRequestBody.self)
+        
+        guard slackRequest.apiAppId == Environment.URLS.slackAppId else {
+            return
+        }
+        
         let secretString = Environment.URLS.slackSigningSecret
         let key = SymmetricKey(data: Data(secretString.utf8))
         
