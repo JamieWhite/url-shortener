@@ -11,16 +11,29 @@ extension HTTPHeaders.Name {
 struct SlackAuthenticator: AsyncRequestAuthenticator {
     func authenticate(request: Request) async throws {
         
+        // Check App ID
         let slackRequest = try request.content.decode(SlackRequestBody.self)
         
         guard slackRequest.apiAppId == Environment.URLS.slackAppId else {
             return
         }
         
+        // Check timestamp
+        let timestamp = request.headers[.xSlackRequestTimestamp].first ?? ""
+        guard let timestampInt = TimeInterval(timestamp) else {
+            return
+        }
+        
+        let timestampDate = Date(timeIntervalSince1970: timestampInt)
+
+        guard Date().distance(to: timestampDate) < 60 * 5 else {
+            return
+        }
+        
+        // Check signature
         let secretString = Environment.URLS.slackSigningSecret
         let key = SymmetricKey(data: Data(secretString.utf8))
         
-        let timestamp = request.headers[.xSlackRequestTimestamp].first ?? ""
         let requestBody = request.body.string
         let stringToVerify = "v0:\(timestamp):\(requestBody ?? "")"
 
