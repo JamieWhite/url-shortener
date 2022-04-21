@@ -22,13 +22,13 @@ func routes(_ app: Application) throws {
             query = query.filter(\.$shortName ~~ q)
         }
         
-        guard let token: String = req.query["token"], token == Environment.get("INDEX_TOKEN") else {
-            return try await req.view.render("denied", ["command": Environment.get("COMMAND")])
+        guard let token: String = req.query["token"], token == Environment.URLS.indexToken else {
+            return try await req.view.render("denied", ["command": Environment.URLS.command])
         }
         
         let shortLinks = try await query.sort(\.$shortName).all()
 
-        return try await req.view.render("index", IndexContext(shortLinks: shortLinks, slackId: Environment.get("SLACK_CLIENT_ID") ?? ""))
+        return try await req.view.render("index", IndexContext(shortLinks: shortLinks, slackId: Environment.URLS.slackClientId))
     }
     
     // MARK: Protected

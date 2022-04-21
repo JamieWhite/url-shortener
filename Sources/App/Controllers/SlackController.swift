@@ -17,10 +17,14 @@ struct SlackController: RouteCollection {
             let splitText = slackRequest.text.split(separator: " ")
             
             guard splitText.count == 2 else {
-                throw Abort(.badRequest)
+                return "Incorrect command format. Should be /\(Environment.URLS.command) [shortName] [URL]"
             }
             
             let shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.userName, slackUserId: slackRequest.userId)
+            
+            guard !shortLink.url.contains(Environment.URLS.hostname) else {
+                return "No references to \(Environment.URLS.hostname)"
+            }
             
             guard try await ShortLink.query(on: req.db).filter(\.$shortName == shortLink.shortName)
                 .first() == nil else {
@@ -33,11 +37,11 @@ struct SlackController: RouteCollection {
         }
         
         slackProtected.post("list") { req -> String in
-            guard let hostName = Environment.get("HOSTNAME"), let indexToken = Environment.get("INDEX_TOKEN") else {
-                throw Abort(.internalServerError, reason: "Missing HOSTNAME/INDEX_TOKEN")
+            guard req.auth.has(Slack.self) else {
+                throw Abort(.unauthorized)
             }
             
-            return "https://\(hostName)/?token=\(indexToken)"
+            return "https://\(Environment.URLS.hostname)/?token=\(Environment.URLS.indexToken)"
         }
     }
 }
