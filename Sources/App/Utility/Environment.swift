@@ -28,6 +28,10 @@ extension Environment {
             Environment.get("SLACK_APP_ID") ?? ""
         }
         
+        static var slackAdmins: [String] {
+            return (Environment.get("SLACK_ADMINS")?.split(separator: ",") ?? []).map { String($0) }
+        }
+        
         static var command: String {
             Environment.get("COMMAND") ?? ""
         }
