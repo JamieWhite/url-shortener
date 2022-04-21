@@ -13,6 +13,7 @@ func routes(_ app: Application) throws {
     struct IndexContext: Encodable {
         let shortLinks: [ShortLink]
         let slackId: String
+        let hostName: String
     }
 
     app.get() { req async throws -> View in
@@ -28,7 +29,9 @@ func routes(_ app: Application) throws {
         
         let shortLinks = try await query.sort(\.$shortName).all()
 
-        return try await req.view.render("index", IndexContext(shortLinks: shortLinks, slackId: Environment.URLS.slackClientId))
+        return try await req.view.render("index", IndexContext(shortLinks: shortLinks,
+                                                               slackId: Environment.URLS.slackClientId,
+                                                               hostName: Environment.URLS.hostname))
     }
     
     // MARK: Protected
