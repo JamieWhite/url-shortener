@@ -34,7 +34,7 @@ final class ShortLink: Model, Content {
 
 extension ShortLink: Validatable {
     static func validations(_ validations: inout Validations) {
-        validations.add("url", as: String.self, is: .url)
+        validations.add("url", as: String.self, is: .remoteUrl)
         validations.add("shortName", as: String.self, is: !.empty)
     }
 }

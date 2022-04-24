@@ -25,7 +25,7 @@
   </thead>
 #for(shortLink in shortLinks):
   <tr>
-    <td><a href="https://#(hostName)/#(shortLink.shortName)">#(shortLink.shortName)</a></td>
+    <td><a href="/#(shortLink.shortName)">#(shortLink.shortName)</a></td>
     <td><a href="#(shortLink.url)">#(shortLink.url)</a></td>
     <td><a href="https://app.slack.com/client/#(slackId)/user_profile/#(shortLink.slackUserId)">#(shortLink.author)</a></td>
     <!-- <td>#(shortlink.createdAt)</td> -->

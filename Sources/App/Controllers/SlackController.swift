@@ -22,8 +22,22 @@ struct SlackController: RouteCollection {
             
             let shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.userName, slackUserId: slackRequest.userId)
             
-            guard !shortLink.url.contains(Environment.URLS.hostname) else {
+            var validCharacters = CharacterSet()
+            validCharacters.formUnion(.lowercaseLetters)
+            validCharacters.formUnion(.uppercaseLetters)
+            validCharacters.formUnion(.decimalDigits)
+            validCharacters.insert(charactersIn: "-_")
+            
+            guard shortLink.shortName.unicodeScalars.allSatisfy({ validCharacters.contains($0) }) else {
+                return "Invalid characters in shortName. Valid characters: a-z, A-Z, 0-9, -_"
+            }
+            
+            if shortLink.url.contains(Environment.URLS.hostname) {
                 return "No references to \(Environment.URLS.hostname)"
+            }
+            
+            if Validator.remoteUrl.validate(shortLink.url).isFailure {
+                return "Invalid URL"
             }
             
             guard try await ShortLink.query(on: req.db).filter(\.$shortName == shortLink.shortName)
