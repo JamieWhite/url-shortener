@@ -17,7 +17,7 @@ struct SlackController: RouteCollection {
             let splitText = slackRequest.text.split(separator: " ")
             
             guard splitText.count == 2 else {
-                return "Incorrect command format. Should be /\(Environment.URLS.command) [shortName] [URL]"
+                return "Incorrect command format. Should be /\(Environment.URLS.command)add [shortName] [URL]"
             }
             
             let shortLink = ShortLink(url: String(splitText[1]), shortName: String(splitText[0]), author: slackRequest.userName, slackUserId: slackRequest.userId)
