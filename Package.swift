@@ -1,4 +1,4 @@
-// swift-tools-version:5.6
+// swift-tools-version:5.7.1
 import PackageDescription
 
 let package = Package(
@@ -8,11 +8,11 @@ let package = Package(
     ],
     dependencies: [
         // 💧 A server-side Swift web framework.
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.63.0"),
-        .package(url: "https://github.com/vapor/fluent.git", from: "4.4.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.67.1"),
+        .package(url: "https://github.com/vapor/fluent.git", from: "4.5.0"),
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.4.0"),
-        .package(url: "https://github.com/vapor/leaf.git", from: "4.2.0"),
-        .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.20.2"),
+        .package(url: "https://github.com/vapor/leaf.git", from: "4.2.2"),
+        .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.23.0"),
     ],
     targets: [
         .target(
